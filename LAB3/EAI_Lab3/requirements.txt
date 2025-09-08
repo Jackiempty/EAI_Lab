@@ -1,0 +1,6 @@
+tensorflow
+tensorpack
+opencv-python
+matplotlib
+click
+git+https://github.com/Amao0714/tf_netbuilder.git#egg=tf_netbuilder

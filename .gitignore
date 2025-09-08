@@ -1,0 +1,7 @@
+.DS_Store
+*.zip
+__pycache__
+model_weights
+*.mp4
+*.mov
+*.csv

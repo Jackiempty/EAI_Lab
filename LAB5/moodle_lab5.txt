@@ -1,0 +1,11 @@
+繳交格式：學號_lab5.zip 
+
+學號_lab5.ipynb 
+IPython notenook 須包含程式碼跟結果 
+學號_lab5.pdf 
+比較學生模型train from scratch和經過2種方法蒸餾後的結果和分析
+在response-based KD中，說明你是如何選擇temperature和alpha這2個參數
+在feature-based KD中，說明你選了哪些layer的feature、你是如何實作這個部分
+說明你是如何設計response-based和feature-based KD的損失函數
+實作過程中遇到的困難及你後來是如何解決的
+其餘檔案如權重檔、資料集請勿一同放入壓縮繳交
