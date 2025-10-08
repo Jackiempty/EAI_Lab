@@ -5,3 +5,4 @@ model_weights
 *.mp4
 *.mov
 *.csv
+cifar-10*
