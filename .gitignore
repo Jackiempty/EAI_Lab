@@ -7,3 +7,6 @@ model_weights
 *.csv
 cifar-10*
 tensorboard
+.ipynb_checkpoints
+*.pth
+E2410*
