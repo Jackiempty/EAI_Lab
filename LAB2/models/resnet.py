@@ -16,14 +16,14 @@ class Bottleneck(nn.Module):
         # Please replace ??? with the correct variable #            
         # example: in_channels, out_channels[0], ...   #
         ################################################
-        self.conv1 = nn.Conv2d(in_channels, out_channels, kernel_size=1, stride=1, padding=0, bias=False)
-        self.bn1 = nn.BatchNorm2d(out_channels)
+        self.conv1 = nn.Conv2d(in_channels, out_channels[0], kernel_size=1, stride=1, padding=0, bias=False)
+        self.bn1 = nn.BatchNorm2d(out_channels[0])
 
-        self.conv2 = nn.Conv2d(out_channels, out_channels, kernel_size=3, stride=stride, padding=1, bias=False)
-        self.bn2 = nn.BatchNorm2d(out_channels)
+        self.conv2 = nn.Conv2d(out_channels[0], out_channels[1], kernel_size=3, stride=stride, padding=1, bias=False)
+        self.bn2 = nn.BatchNorm2d(out_channels[1])
 
-        self.conv3 = nn.Conv2d(out_channels, out_channels, kernel_size=1, stride=1, padding=0, bias=False)
-        self.bn3 = nn.BatchNorm2d(out_channels)
+        self.conv3 = nn.Conv2d(out_channels[1], out_channels[2], kernel_size=1, stride=1, padding=0, bias=False)
+        self.bn3 = nn.BatchNorm2d(out_channels[2])
 
         self.relu = nn.ReLU(inplace=True)
         self.downsample = downsample
@@ -51,12 +51,12 @@ class ResNet(nn.Module):
         self.current_cfg_idx = 0
 
         # Conv1
-        self.conv1 = nn.Conv2d(in_channels, 64, kernel_size=3, stride=1, padding=1, bias=False)
-        self.bn1 = nn.BatchNorm2d(64)
+        self.conv1 = nn.Conv2d(in_channels, cfg[self.current_cfg_idx], kernel_size=3, stride=1, padding=1, bias=False)
+        self.bn1 = nn.BatchNorm2d(cfg[self.current_cfg_idx])
         self.relu = nn.ReLU(inplace=True)
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
         self.current_cfg_idx += 1
-        self.inplanes = 64
+        self.inplanes = cfg[self.current_cfg_idx]
 
         # Layer1~Layer4
         self.layer1 = self._make_layer(block, 64, layers[0], cfg)
@@ -73,8 +73,45 @@ class ResNet(nn.Module):
         #############################################################################
         # Figure out how to generate the correct layers and downsample based on cfg #
         #############################################################################
+        downsample = None
 
-        return 
+        first_block_cfg = cfg[self.current_cfg_idx : self.current_cfg_idx + 3]
+        in_channels = self.inplanes
+        out_channels = first_block_cfg[2]
+
+        # if stride != 1, do downsample
+        if stride != 1 or in_channels != out_channels:
+            downsample = nn.Sequential(
+                nn.Conv2d(
+                    in_channels,
+                    out_channels,
+                    kernel_size=1,
+                    stride=stride,
+                    bias=False,
+                ),
+                # nn.BatchNorm2d(out_channels),
+            )
+
+        layers = []
+        # first block（might need downsample）
+        layers.append(
+            block(in_channels, planes, first_block_cfg, downsample=downsample, stride=stride)
+        )
+
+        # update channels and cfg index
+        self.inplanes = out_channels
+        self.current_cfg_idx += 3
+
+        # rest of blocks（stride=1, downsample=None）
+        for i in range(1, blocks):
+            block_cfg = cfg[self.current_cfg_idx : self.current_cfg_idx + 3]
+            layers.append(
+                block(self.inplanes, planes, block_cfg, downsample=None, stride=1)
+            )
+            self.inplanes = block_cfg[2]
+            self.current_cfg_idx += 3
+
+        return nn.Sequential(*layers)
 
     def forward(self, x):
         x = self.relu(self.bn1(self.conv1(x)))
