@@ -7,10 +7,15 @@ import torch.nn.functional as F
 # ----------------------
 class Bottleneck(nn.Module):
     expansion = 4
-    def __init__(self, in_channels, planes, out_channels, downsample=None, stride=1):
+    def __init__(self, in_channels, planes, out_channels=None, downsample=None, stride=1):
         super(Bottleneck, self).__init__()
 
-        assert len(out_channels) == 3, "Bottleneck requires out_channels list of length 3"
+        # 若沒有提供 out_channels，就依照原始 ResNet 結構自動推導
+        if out_channels is None:
+            out_channels = [planes, planes, planes * self.expansion]
+        else:
+            assert len(out_channels) == 3, "Bottleneck requires out_channels list of length 3"
+        # assert len(out_channels) == 3, "Bottleneck requires out_channels list of length 3"
         
         ################################################
         # Please replace ??? with the correct variable #            
@@ -22,21 +27,38 @@ class Bottleneck(nn.Module):
         self.conv2 = nn.Conv2d(out_channels[0], out_channels[1], kernel_size=3, stride=stride, padding=1, bias=False)
         self.bn2 = nn.BatchNorm2d(out_channels[1])
 
-        self.conv3 = nn.Conv2d(out_channels[1], out_channels[2], kernel_size=1, stride=1, padding=0, bias=False)
-        self.bn3 = nn.BatchNorm2d(out_channels[2])
+        # self.conv3 = nn.Conv2d(out_channels[1], out_channels[2], kernel_size=1, stride=1, padding=0, bias=False)
+        # self.bn3 = nn.BatchNorm2d(out_channels[2])
+        self.conv3 = nn.Conv2d(out_channels[1], planes * self.expansion, kernel_size=1, stride=1, padding=0, bias=False)
+        self.bn3 = nn.BatchNorm2d(planes * self.expansion)
 
         self.relu = nn.ReLU(inplace=True)
+        # downsample path (若 stride ≠ 1 或 channel 不匹配)
+        # if downsample is None and (stride != 1 or in_channels != out_channels[2]):
+        #     # print("not match channel, in:{}, out:{}".format(in_channels, out_channels[2]))
+        #     self.downsample = nn.Sequential(
+        #         nn.Conv2d(in_channels, out_channels[2], kernel_size=1, stride=stride, bias=False),
+        #         # nn.BatchNorm2d(out_channels[2]),
+        #     )
+        # else:
+        #     self.downsample = downsample
         self.downsample = downsample
 
     def forward(self, x):
         identity = x
+        # print("before downsample", identity.shape)
 
         out = self.relu(self.bn1(self.conv1(x)))
         out = self.relu(self.bn2(self.conv2(out)))
         out = self.bn3(self.conv3(out))
 
         if self.downsample is not None:
+            # print("the downsample: ", self.downsample)
+            # print("downsample conv weight:", self.downsample[0].weight.shape)
+            # print("conv3 weight:", self.conv3.weight.shape)
+            # print("bn3 weight:", self.bn3.weight.shape)
             identity = self.downsample(identity)
+            # print("after downsample", identity.shape)
 
         out += identity
         out = self.relu(out)
@@ -81,6 +103,8 @@ class ResNet(nn.Module):
 
         # if stride != 1, do downsample
         if stride != 1 or in_channels != out_channels:
+            out_channels = planes * 4
+            # print("down sample in resnet, in:{}, out:{}".format(in_channels, out_channels))
             downsample = nn.Sequential(
                 nn.Conv2d(
                     in_channels,
@@ -94,6 +118,7 @@ class ResNet(nn.Module):
 
         layers = []
         # first block（might need downsample）
+        # print("parameters: [in_channels: {}, planes: {}, cfg: {}]".format(in_channels, planes, first_block_cfg))
         layers.append(
             block(in_channels, planes, first_block_cfg, downsample=downsample, stride=stride)
         )
