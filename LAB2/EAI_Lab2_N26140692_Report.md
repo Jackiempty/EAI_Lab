@@ -7,7 +7,7 @@
 ![lambda=1e-5](images/lambda=1e-5.png)
 ![labmda=1e-4](images/lambda=1e-4.png)
 ## Test accuracy after pruning 50% and 90% channels
-### 50%
+### 50% pruned
 ```
 FLOPs: 214728384.0
 Params: 9563795.0
@@ -26,9 +26,9 @@ Estimated Total Size (MB): 58.01
 ----------------------------------------------------------------
 ```
 
-![50% acc](images/50%_acc.png)
+![50% acc](images/50_acc.png)
 
-### 90%
+### 90% pruned
 ```
 FLOPs: 130298030.0
 Params: 3736356.0
@@ -45,7 +45,7 @@ Forward/backward pass size (MB): 20.15
 Params size (MB): 14.25
 Estimated Total Size (MB): 34.41
 ```
-![90% acc](images/90%_acc.png)
+![90% acc](images/90_acc.png)
 
 ## Train and test accuracy after fine-tuning the pruned 90% model
 ![prune_loss](images/prune_loss.png)
