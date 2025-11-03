@@ -9,4 +9,5 @@ cifar-10*
 tensorboard
 .ipynb_checkpoints
 *.pth
+*.pt
 E2410*
