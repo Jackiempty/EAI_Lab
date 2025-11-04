@@ -235,7 +235,7 @@ def fuse_model(self):
 | **Downsample fusion**                            | Ensures all convolutional paths (main + skip) are quantization-ready.                                  |
 
 ## 2. Training and Validation Curves
-![loss_acc](results/loss_accuracy.png)
+![loss_acc](images/loss_accuracy.png)
 ### **1. Loss Curves**
 * **Training loss** consistently decreases and reaches around **0.6** by the final epochs.
 * **Validation loss** also decreases initially but **plateaus after about epoch 10–12** and remains **higher than the training loss** afterward.
