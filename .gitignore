@@ -11,3 +11,4 @@ tensorboard
 *.pth
 *.pt
 E2410*
+*_Ans
