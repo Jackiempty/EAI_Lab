@@ -12,3 +12,5 @@ tensorboard
 *.pt
 E2410*
 *_Ans
+.gradio
+*.onnx
